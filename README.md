@@ -1,4 +1,4 @@
-# Laboratorio 5: Machine Learning en Sistema Embebido (ESP32)
+# Tarea 5 Laboratorio: Machine Learning en Sistema Embebido (ESP32)
 
 Este proyecto implementa un sistema de monitoreo y control ON-OFF utilizando un **Perceptrón Simple** entrenado mediante el algoritmo **LMS** sobre un microcontrolador ESP32.
 
