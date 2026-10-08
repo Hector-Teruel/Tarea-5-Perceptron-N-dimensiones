@@ -1,0 +1,21 @@
+# Laboratorio 5: Machine Learning en Sistema Embebido (ESP32)
+
+Este proyecto implementa un sistema de monitoreo y control ON-OFF utilizando un **Perceptrón Simple** entrenado mediante el algoritmo **LMS** sobre un microcontrolador ESP32.
+
+## 👥 Integrantes del Equipo
+* **Hector Teruel Grado**
+* **Hector Herrera Niño**
+* **Ivan Gonzales Salinas**
+
+## 🏗️ Arquitectura del Software
+El proyecto está organizado en una arquitectura por capas dentro de la carpeta `src/`:
+
+* **`src/BSP/`**: Board Support Package (Módulos de bajo nivel: `ADC.c`, `GPIO.c`, `PRINT.c`, `BSP.h`).
+* **`src/Perceptron/`**: Algoritmo del perceptrón simple (Entrenamiento LMS e inferencia).
+* **`MiProyecto.ino`**: Gestión del sistema en tiempo real (RTOS / ciclo principal) y control del estado del botón/LEDs.
+
+## 🚀 Requisitos y Materiales
+* Microcontrolador **ESP32**
+* Potenciómetros ($N$ entradas)
+* 1 Botón (con debounce)
+* 2 LEDs (indicadores de estado)
