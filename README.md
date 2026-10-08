@@ -12,10 +12,10 @@ El proyecto está organizado en una arquitectura por capas dentro de la carpeta 
 
 * **`src/BSP/`**: Board Support Package (Módulos de bajo nivel: `ADC.c`, `GPIO.c`, `PRINT.c`, `BSP.h`).
 * **`src/Perceptron/`**: Algoritmo del perceptrón simple (Entrenamiento LMS e inferencia).
-* **`MiProyecto.ino`**: Gestión del sistema en tiempo real (RTOS / ciclo principal) y control del estado del botón/LEDs.
+* **`tarea5_lab_ml.ino`**: Gestión del sistema en tiempo real (RTOS / ciclo principal) y control del estado del botón/LEDs.
 
 ## 🚀 Requisitos y Materiales
 * Microcontrolador **ESP32**
 * Potenciómetros ($N$ entradas)
-* 1 Botón (con debounce)
+* 1 Botón
 * 2 LEDs (indicadores de estado)
