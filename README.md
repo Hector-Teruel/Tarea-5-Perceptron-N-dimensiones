@@ -11,7 +11,7 @@ Este proyecto implementa un sistema de monitoreo y control ON-OFF utilizando un 
 El proyecto está organizado en una arquitectura por capas dentro de la carpeta `src/`:
 
 * **`src/BSP/`**: Board Support Package (Módulos de bajo nivel: `ADC.c`, `GPIO.c`, `PRINT.c`, `BSP.h`).
-* **`src/Perceptron/`**: Algoritmo del perceptrón simple (Entrenamiento LMS e inferencia).
+* **`src/ML/`**: Algoritmo del perceptrón simple (Entrenamiento LMS e inferencia).
 * **`tarea5_lab_ml.ino`**: Gestión del sistema en tiempo real (RTOS / ciclo principal) y control del estado del botón/LEDs.
 
 ## 🚀 Requisitos y Materiales
