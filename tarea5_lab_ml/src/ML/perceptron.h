@@ -49,17 +49,11 @@ bool perceptron_init(perceptron_t *p, uint8_t entradas);
 
 void perceptron_free(perceptron_t *p);
 
-double producto_punto(const double *w, const double *x, uint8_t entradas);
+double producto_punto(const perceptron_t *p);
 
 void generar_patrones(perceptron_t *p);
 
 uint8_t contar_aciertos(const double *X, const uint8_t *d_bin, const double *w, double b, int entradas, uint8_t patrones);
 
-void entrenar_lms(const double *X, const double *d,
-                  const uint8_t *d_bin,
-                  uint8_t entradas, uint8_t patrones,
-                  uint8_t clase_min, double factor_min,
-                  double eta, double *w, double *b,
-                  double *mse_final, int *epocas_realizadas,
-                  uint8_t *convergio, uint8_t *divergio);
+void entrenarLMS(perceptron_t *p, uint8_t clase_min, double factor_min);
 #endif
