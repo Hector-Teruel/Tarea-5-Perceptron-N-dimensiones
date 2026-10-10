@@ -19,8 +19,9 @@
 #define PACIENCIA 20
 
 // =================================================================
-// DEFINICION DE ESTRUCTURAS
+// DEFINICION DE ESTRUCTURAS Y ENUMERACIONES
 // =================================================================
+
 /**
  * @struct perceptron_t
  * @brief Estructura principal del perceptron que contiene todo lo 
@@ -53,10 +54,10 @@ typedef struct {
  * lo que necesita para la realizar la inferencia
  */
 typedef struct {
-  uint8_t entradas;
-  double *w;
-  double b;
-  bool entrenado;
+  uint8_t entradas;   // Cantidad de entradas
+  double *w;          // Vector de pesos
+  double b;           // Bias
+  bool entrenado;     // Bandera de si el ya fue entrenado
 } modelo_t;
 
 /**

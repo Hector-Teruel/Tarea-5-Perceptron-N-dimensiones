@@ -1,6 +1,12 @@
 /**
  * @file BSP.h
  * @date 07/10/2026
+ *
+ * @brief Archivo de cabecera que contiene las librerias, enumeraciones
+ * y prototipos de funciones necesarias para los componentes del sistema:
+ * - ADC
+ * - GPIO
+ * - PRINT
  */
 
 #ifndef BSP_H
@@ -8,9 +14,15 @@
 
 #include <Arduino.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <stdlib.h>
-#include <string.h>
-#include <math.h>
+
+#define BOTON 26
+#define UMBRAL 2048
+
+// =================================================================
+//                  DEFINICION DE ENUMERACIONES
+// =================================================================
 
 typedef enum {
   OFF = 0,
@@ -29,5 +41,71 @@ typedef enum {
   LED_STATE = 2,
   LED_SALIDA = 25
 } leds_e;
+
+// =================================================================
+//                  PROTOTIPOS DE FUNCIONES GPIO
+// =================================================================
+
+/**
+ * @brief Funcion de inicializacion de los GPIOs del sistema
+ */
+void gpio_init();
+
+/**
+ * @brief Funcion para lectura del boton del sistema
+ *
+ * @return Devuelve true: si fue presionado, false: si no fue presionado
+ */
+bool leer_boton();
+
+/**
+ * @brief Funcion para encender un led
+ *
+ * @param led LED que se quiere encender
+ */
+void encender_led(leds_e led);
+
+/**
+ * @brief Funcion para apagar un led
+ *
+ * @param led LED que se quiere apagar
+ */
+void apagar_led(leds_e led);
+
+/**
+ * @brief Funcion para alternar el estado de un led
+ *
+ * @param led LED que se quiere alternar su estado
+ */
+void toggle_led(leds_e led);
+
+// =================================================================
+//                  PROTOTIPOS DE FUNCIONES ADC
+// =================================================================
+
+/**
+ * @brief Funcion que inicializa los canales analogicos del ESP32
+ */
+void adc_init();
+
+/**
+ * @brief Funcion para dectectar la cantidad de pots conectados
+ *
+ * @return uint8_t Numero de entradas detectadas
+ */
+uint8_t adc_detectar_entradas();
+
+/**
+ * @brief Lee el valor binarizado del j-ésimo potenciómetro detectado como activo
+ * @param indice_activo Índice de entrada (0 a N-1)
+ * @param umbral Valor límite (ej. 2048)
+ */
+uint8_t adc_leerBin_act(uint8_t ind, uint16_t umbral);
+
+// =================================================================
+//                  PROTOTIPOS DE FUNCIONES PRINT
+// =================================================================
+
+
 
 #endif
