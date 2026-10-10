@@ -109,9 +109,46 @@ uint8_t adc_leerBin_act(uint8_t ind, uint16_t umbral);
 void adc_free();
 
 // =================================================================
-//                  PROTOTIPOS DE FUNCIONES PRINT
+//               PROTOTIPOS DE FUNCIONES PRINT / UART
 // =================================================================
 
+/**
+ * @brief Inicializa la comunicacion por puerto Serial con la HMI
+ * @param baudrate Velocidad en baudios (ej. 115200)
+ */
+void print_init(uint32_t baudrate);
 
+/**
+ * @brief Envia una cadena de texto a la HMI
+ * @param msj Mensaje a transmitir
+ */
+void print_mensaje(const char *msj);
+
+/**
+ * @brief Envia un numero entero a la HMI
+ * @param val Entero a transmitir
+ */
+void print_entero(uint8_t val);
+
+/**
+ * @brief Envia un numero con punto flotante a la HMI con precision fija
+ * @param val Decimal a transmitir
+ * @param decimales Cantidad de digitos decimales
+ */
+void print_float(double val, uint8_t decimales);
+
+/**
+ * @brief Verifica si la HMI ha enviado un comando por el puerto serie
+ * @return true: si hay datos en el buffer de entrada, false: en caso contrario
+ */
+bool print_hay_datos();
+
+/**
+ * @brief Lee una linea completa de comando enviada desde la HMI
+ * @param buffer Arreglo donde se guarda la cadena recibida
+ * @param max_len Tamaño maximo del buffer
+ * @return true: si se lee una cadena valida, false: si no es valida
+ */
+bool print_leer_comando(char *buffer, size_t max_len);
 
 #endif
