@@ -13,6 +13,11 @@
 #include <math.h>
 
 typedef enum {
+  OFF = 0,
+  RUN,
+} modo_sis_e;
+
+typedef enum {
   POT1 = 36,
   POT2 = 39,
   POT3 = 34,
