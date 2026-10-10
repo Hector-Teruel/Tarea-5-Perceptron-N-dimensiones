@@ -27,10 +27,17 @@ void adc_init()
 
 uint8_t adc_detectar_entradas()
 {
+  // si ya existia que lo libere 
+  if (pots_act != NULL) {
+    free(pots_act);
+    pots_act = NULL;
+  }
+  
+  n_entradas_act = 0;
   pots_e temp[5];
 
   for (uint8_t i = 0; i <  5; i++) {
-    uint8_t suma = 0;
+    uint32_t suma = 0; // 32b para evitar desbordamiento
 
     for (uint8_t j = 0; j < 10; j++) {
       suma += analogRead(LISTA_POTS[i]);
@@ -39,17 +46,22 @@ uint8_t adc_detectar_entradas()
 
     uint16_t prom = (uint16_t)(suma / 10);
 
-    if (prom > 80) {
+    if (prom > 1100) {
+      temp[n_entradas_act] = LISTA_POTS[i];
       n_entradas_act++;
-      temp[i] = LISTA_POTS[i];
     }
   }
 
-  if (n_entradas_act < 2) n_entradas_act = 2;
+  if (n_entradas_act < 2) {
+    n_entradas_act = 2;
+    temp[0] = POT1;
+    temp[1] = POT2;
+  }
   
-  pots_act = (pots_e *)malloc((size_t)n_entradas_act * sizeof(uint8_t));
+  pots_act = (pots_e *)malloc((size_t)n_entradas_act * sizeof(pots_e));
   if (pots_act == NULL) {
     free(pots_act);
+    n_entradas_act = 0;
     return 0;
   }
 
@@ -60,8 +72,18 @@ uint8_t adc_detectar_entradas()
 
 uint8_t adc_leerBin_act(uint8_t ind, uint16_t umbral)
 {
-  if (ind > n_entradas_act) return 0;
+  if (pots_act == NULL || ind >= n_entradas_act) return 0;
 
   pots_e pot = pots_act[ind];
   return (analogRead(pot) >= umbral) ? 1 : 0;
+}
+
+void adc_free()
+{
+  if (pots_act != NULL) {
+    free(pots_act);
+    pots_act = NULL;
+  }
+
+  n_entradas_act = 0;
 }

@@ -102,6 +102,12 @@ uint8_t adc_detectar_entradas();
  */
 uint8_t adc_leerBin_act(uint8_t ind, uint16_t umbral);
 
+/**
+ * @brief Libera la memoria dinamica reservada y reinicia el valor
+ * de entradas activas a cero
+ */
+void adc_free();
+
 // =================================================================
 //                  PROTOTIPOS DE FUNCIONES PRINT
 // =================================================================
