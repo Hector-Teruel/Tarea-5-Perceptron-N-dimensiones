@@ -9,46 +9,36 @@ class HMAPerceptronApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Control & Monitoreo — Perceptrón Multidimensional ESP32")
-        self.root.geometry("850x600")
-        self.root.configure(bg="#1e1e2e")  # Fondo oscuro elegante (Catppuccin Base)
+        self.root.geometry("850x680")
+        self.root.configure(bg="#1e1e2e")
         self.root.resizable(True, True)
 
         self.ser = None
         self.leyendo_serial = False
+        self.lbl_pots = []  # Lista de etiquetas visuales para los pots activos
 
-        # Configurar estilos de TTK
         self.setup_styles()
-
-        # Construir Interfaz
         self.create_widgets()
-
-        # Listar puertos COM al iniciar
         self.actualizar_puertos()
 
     def setup_styles(self):
         self.style = ttk.Style()
         self.style.theme_use("clam")
 
-        # Colores
         BG_DARK = "#1e1e2e"
         PANEL_BG = "#2a2a3c"
         TEXT_COLOR = "#cdd6f4"
         ACCENT_COLOR = "#89b4fa"
 
-        # Estilo de LabelFrames (Paneles)
         self.style.configure("TLabelframe", background=PANEL_BG, borderwidth=1, relief="solid")
         self.style.configure("TLabelframe.Label", background=PANEL_BG, foreground=ACCENT_COLOR, font=("Segoe UI", 10, "bold"))
-
-        # Estilo de Labels
         self.style.configure("TLabel", background=PANEL_BG, foreground=TEXT_COLOR, font=("Segoe UI", 9))
         self.style.configure("Header.TLabel", background=BG_DARK, foreground="#ffffff", font=("Segoe UI", 14, "bold"))
         self.style.configure("Status.TLabel", background=BG_DARK, foreground="#a6adc8", font=("Segoe UI", 9, "italic"))
 
-        # Estilo de Combobox y Entry
         self.style.configure("TCombobox", fieldbackground="#313244", background="#45475a", foreground="#ffffff")
         self.style.map("TCombobox", fieldbackground=[("readonly", "#313244")])
 
-        # Estilo de Botones
         self.style.configure("Accent.TButton", font=("Segoe UI", 10, "bold"), background="#89b4fa", foreground="#11111b")
         self.style.map("Accent.TButton", background=[("active", "#b4befe")])
 
@@ -72,7 +62,7 @@ class HMAPerceptronApp:
         self.lbl_estado_conexion.pack(side="right")
 
         # -------------------------------------------------------------
-        # PANEL SUPERIOR: CONFIGURACIÓN CONEXIÓN PUERTO SERIE
+        # PANEL SUPERIOR: CONEXIÓN SERIAL
         # -------------------------------------------------------------
         frame_serial = ttk.LabelFrame(self.root, text=" Conexión Hardware (UART / Serial) ", padding=10)
         frame_serial.pack(fill="x", padx=20, pady=5)
@@ -96,7 +86,7 @@ class HMAPerceptronApp:
         # PANEL MEDIO: PARÁMETROS DEL MODELO
         # -------------------------------------------------------------
         frame_config = ttk.LabelFrame(self.root, text=" Configuración de la Tabla de Verdad ", padding=15)
-        frame_config.pack(fill="x", padx=20, pady=10)
+        frame_config.pack(fill="x", padx=20, pady=5)
 
         ttk.Label(frame_config, text="Función Lógica:").grid(row=0, column=0, padx=5, pady=5, sticky="w")
         self.combo_funcion = ttk.Combobox(frame_config, values=["AND", "OR", "OTRO (Personalizada)"], state="readonly", width=22)
@@ -109,10 +99,22 @@ class HMAPerceptronApp:
         self.entry_secuencia = tk.Entry(frame_config, bg="#313244", fg="#ffffff", insertbackground="white", 
                                        font=("Consolas", 10, "bold"), relief="flat", width=20, disabledbackground="#181825")
         self.entry_secuencia.grid(row=0, column=3, padx=5, pady=5)
-        self.entry_secuencia.config(state="disabled") # Deshabilitado por defecto si es AND/OR
+        self.entry_secuencia.config(state="disabled")
 
         self.btn_entrenar = ttk.Button(frame_config, text="▶ Enviar & Entrenar", style="Accent.TButton", command=self.enviar_entrenamiento)
         self.btn_entrenar.grid(row=0, column=4, padx=(25, 5), pady=5)
+
+        # -------------------------------------------------------------
+        # PANEL TELEMETRÍA: LECTURA BINARIZADA DE ENTRADAS (POTS)
+        # -------------------------------------------------------------
+        frame_telemetria = ttk.LabelFrame(self.root, text=" Telemetría de Entradas Activas (Binarizado 0 / 1) ", padding=10)
+        frame_telemetria.pack(fill="x", padx=20, pady=5)
+
+        self.frame_pots_container = tk.Frame(frame_telemetria, bg="#2a2a3c")
+        self.frame_pots_container.pack(fill="x", expand=True)
+
+        self.lbl_no_data = ttk.Label(self.frame_pots_container, text="Esperando transmisión de entradas desde el ESP32...", font=("Segoe UI", 9, "italic"))
+        self.lbl_no_data.pack(anchor="center", pady=5)
 
         # -------------------------------------------------------------
         # PANEL INFERIOR: MONITOREO Y CONSOLA
@@ -120,7 +122,6 @@ class HMAPerceptronApp:
         frame_console = ttk.LabelFrame(self.root, text=" Monitor en Tiempo Real (ESP32 Feedback) ", padding=10)
         frame_console.pack(fill="both", expand=True, padx=20, pady=(5, 15))
 
-        # Text Widget para Consola
         self.txt_consola = tk.Text(frame_console, bg="#11111b", fg="#a6e3a1", font=("Consolas", 9),
                                    relief="flat", wrap="word", insertbackground="white")
         self.txt_consola.pack(side="left", fill="both", expand=True)
@@ -162,7 +163,6 @@ class HMAPerceptronApp:
                 self.ser = serial.Serial(puerto, int(baudrate), timeout=1)
                 self.leyendo_serial = True
                 
-                # Hilo para leer datos entrantes sin congelar la ventana
                 self.thread_lectura = threading.Thread(target=self.leer_puerto_serie, daemon=True)
                 self.thread_lectura.start()
 
@@ -205,20 +205,52 @@ class HMAPerceptronApp:
         except Exception as e:
             messagebox.showerror("Error de Transmisión", f"Fallo al enviar datos por el puerto serie: {e}")
 
+    def actualizar_widgets_pots(self, bits_str):
+        # Si cambia el número de potenciómetros detectados, reconstruimos los widgets
+        n_pots = len(bits_str)
+        if len(self.lbl_pots) != n_pots:
+            for w in self.frame_pots_container.winfo_children():
+                w.destroy()
+            self.lbl_pots.clear()
+
+            for i in range(n_pots):
+                f_item = tk.Frame(self.frame_pots_container, bg="#313244", relief="solid", bd=1, padx=10, pady=5)
+                f_item.pack(side="left", padx=10, expand=True)
+
+                lbl_titulo = tk.Label(f_item, text=f"Entrada {i+1}", bg="#313244", fg="#a6adc8", font=("Segoe UI", 8, "bold"))
+                lbl_titulo.pack()
+
+                lbl_val = tk.Label(f_item, text="0", bg="#313244", fg="#f38ba8", font=("Consolas", 14, "bold"))
+                lbl_val.pack()
+
+                self.lbl_pots.append(lbl_val)
+
+        # Actualizar los valores y colores de cada potenciómetro activo
+        for i, bit in enumerate(bits_str):
+            if bit == '1':
+                self.lbl_pots[i].config(text="1 (HIGH)", fg="#a6e3a1") # Verde para HIGH
+            else:
+                self.lbl_pots[i].config(text="0 (LOW)", fg="#f38ba8")  # Rojo/Rosa para LOW
+
     def leer_puerto_serie(self):
         while self.leyendo_serial and self.ser and self.ser.is_open:
             try:
                 if self.ser.in_waiting > 0:
-                    linea = self.ser.readline().decode('utf-8', errors='replace')
+                    linea = self.ser.readline().decode('utf-8', errors='replace').strip()
                     if linea:
-                        self.log_consola(f"[RX <- ESP32] {linea}")
+                        # Si es una trama de telemetría de los potenciómetros
+                        if linea.startswith("POTS:"):
+                            bits = linea.split("POTS:")[1]
+                            self.root.after(0, self.actualizar_widgets_pots, bits)
+                        else:
+                            self.log_consola(f"[RX <- ESP32] {linea}\n")
             except Exception:
                 break
             time.sleep(0.02)
 
     def log_consola(self, texto):
         self.txt_consola.insert(tk.END, texto)
-        self.txt_consola.see(tk.END) # Auto-scroll al final
+        self.txt_consola.see(tk.END)
 
 if __name__ == "__main__":
     root = tk.Tk()
