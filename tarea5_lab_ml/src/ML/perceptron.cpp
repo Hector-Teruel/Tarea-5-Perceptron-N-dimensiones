@@ -42,6 +42,7 @@ bool modelo_init(modelo_t *m, uint8_t entradas)
 {
   if (m == NULL || entradas < 2 || entradas > MAX_ENTRADAS) return false;
 
+  // Si ya existia que lo limpie
   if (m->w != NULL) {
     free(m->w);
     m->w = NULL;
