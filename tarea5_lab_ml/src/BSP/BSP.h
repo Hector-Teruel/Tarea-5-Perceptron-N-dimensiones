@@ -128,7 +128,7 @@ void print_mensaje(const char *msj);
  * @brief Envia un numero entero a la HMI
  * @param val Entero a transmitir
  */
-void print_entero(uint8_t val);
+void print_entero(int val);
 
 /**
  * @brief Envia un numero con punto flotante a la HMI con precision fija

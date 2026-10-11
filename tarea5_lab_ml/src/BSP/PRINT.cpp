@@ -18,7 +18,7 @@ void print_mensaje(const char *msj)
   Serial.println(msj);
 }
 
-void print_entero(uint8_t val)
+void print_entero(int val)
 {
   Serial.println(val);
 }
