@@ -225,7 +225,7 @@ void tareaHMI(void *pvParameters)
         print_mensaje("[HMI] Configuracion cargada: Funcion OR.");
       }
 
-      else if (strncmp(buffer, "CMD:OTRO", 9) == 0) {
+      else if (strncmp(buffer, "CMD:OTRO:", 9) == 0) {
         seleccion = OTRO;
         strncpy(secuencia, &buffer[9], sizeof(secuencia) - 1);
         secuencia[sizeof(secuencia) - 1] = '\0'; // al final de la secuencia poner '\0'
