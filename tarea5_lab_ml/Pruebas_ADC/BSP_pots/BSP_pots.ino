@@ -5,6 +5,11 @@ typedef struct{
   int bsp_threshold;
 } bsp_pots_config;
 
+typedef struct{
+  Readings_array bsp_analog;
+  Readings_array bsp_encoded;
+} bsp_pots_readings;
+
 
 class bsp_board_pots {
   private: 
@@ -18,23 +23,24 @@ class bsp_board_pots {
       bsp_setup.bsp_threshold = threshold;
     }
 
-    Readings_array bsp_read_pots(){
-      Readings_array hard_binary_readings;
-      Readings_array readings = read_analog_pines(bsp_setup.bsp_pots);
+    bsp_pots_readings bsp_read_pots(){
+      bsp_pots_readings pot_readings;
+      Readings_array read_all_pots = read_analog_pines(bsp_setup.bsp_pots);
 
-      for (int i=0; i<readings.size(); i++){
-        if (readings[i] != 0){
-          if (readings[i] < bsp_setup.bsp_threshold){
-            hard_binary_readings.push_back(0);
+      for (int i=0; i<read_all_pots.size(); i++){
+        if (read_all_pots[i] != 0){
+          if (read_all_pots[i] < bsp_setup.bsp_threshold){
+            pot_readings.bsp_encoded.push_back(0);
           }
           else{
-            hard_binary_readings.push_back(1);
+            pot_readings.bsp_encoded.push_back(1);
           }
+          pot_readings.bsp_analog.push_back(read_all_pots[i]);
         }
 
       }
       //bsp_ON_pots = hard_binary_readings.size();
-      return hard_binary_readings;
+      return pot_readings;
     }
 
     /*int get_pots_ON() {
@@ -52,14 +58,16 @@ void setup() {
 }
 
 void loop() {
-  Readings_array readings = bsp_pots.bsp_read_pots();
+  bsp_pots_readings readings = bsp_pots.bsp_read_pots();
   //int pots_funcionando = bsp_pots.get_pots_ON();
-  int pots_funcionando = readings.size();
+  int pots_funcionando = readings.bsp_encoded.size();
 
   Serial.println(pots_funcionando);
 
-  for (int i = 0; i < readings.size(); i++) {
-    Serial.println(readings[i]);
+  for (int i = 0; i < readings.bsp_encoded.size(); i++) {
+    Serial.print(readings.bsp_encoded[i]);
+    Serial.print(",");
+    Serial.println(readings.bsp_analog[i]);
   }
     
   Serial.println("---");
