@@ -216,6 +216,7 @@ void tareaHMI(void *pvParameters)
         secuencia[0] = '\0';
 
         print_mensaje("[HMI] Configuracion cargada: Funcion AND.");
+        num_entradas_detectadas = adc_detectar_entradas();
       }
 
       else if (strncmp(buffer, "CMD:OR", 6) == 0) {
@@ -223,6 +224,7 @@ void tareaHMI(void *pvParameters)
         secuencia[0] = '\0';
 
         print_mensaje("[HMI] Configuracion cargada: Funcion OR.");
+        num_entradas_detectadas = adc_detectar_entradas();
       }
 
       else if (strncmp(buffer, "CMD:OTRO:", 9) == 0) {
@@ -231,6 +233,7 @@ void tareaHMI(void *pvParameters)
         secuencia[sizeof(secuencia) - 1] = '\0'; // al final de la secuencia poner '\0'
 
         print_mensaje("[HMI] Configuracion cargada: Funcion personalizada.");
+        num_entradas_detectadas = adc_detectar_entradas();
       }
 
       if (modo_sis == RUN) {

@@ -17,7 +17,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#define BOTON 26
+#define BOTON 18
 #define UMBRAL 1548 //2048
 
 // =================================================================
@@ -30,16 +30,16 @@ typedef enum {
 } modo_sis_e;
 
 typedef enum {
-  POT1 = 36,
-  POT2 = 39,
-  POT3 = 34,
-  POT4 = 35,
-  POT5 = 32
+  POT1 = 33,
+  POT2 = 32,
+  POT3 = 35,
+  POT4 = 34,
+  POT5 = 39
 } pots_e;
 
 typedef enum {
   LED_STATE = 2,
-  LED_SALIDA = 25
+  LED_SALIDA = 4
 } leds_e;
 
 // =================================================================
