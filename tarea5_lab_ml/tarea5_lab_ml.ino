@@ -28,11 +28,15 @@ char secuencia[33] = {0}; // 2^5 = 32B + 1 por '\0'
 uint8_t hmi_aciertos = 0;
 double hmi_mse = 0.0;
 uint16_t hmi_epocas = 0;
+
 uint8_t num_entradas_detectadas = 2;
+uint8_t last_num_entradas_detectadas = 2;
+
 bool bandera_entrenado = false;
 
 SemaphoreHandle_t semEntrenamiento = NULL;
 SemaphoreHandle_t mtxModelo = NULL;
+SemaphoreHandle_t mtxPots = NULL;
 
 // =================================================================
 //                  PROTOTIPOS DE FUNCIONES 
@@ -62,6 +66,7 @@ void setup() {
   // Crear semaforo y mutex
   semEntrenamiento = xSemaphoreCreateBinary();
   mtxModelo = xSemaphoreCreateMutex();
+  mtxPots = xSemaphoreCreateMutex();
 
   // Crear las tareas
   xTaskCreatePinnedToCore(tareaBoton, "TareaBoton", 2048, NULL, 3, NULL, 1);
@@ -88,7 +93,7 @@ void tareaBoton(void *pvParameters)
   for (;;) {
     bool state = leer_boton();
 
-    // Detectar flanco de bajada solamente
+    // it detects rising edge
     if (state && !state_old) {
       vTaskDelay(pdMS_TO_TICKS(50));  // debounce simple
 
@@ -133,7 +138,11 @@ void tareaEntrenamiento(void *pvParameters)
           cargar_salidas(&perceptron, seleccion, secuencia);
 
           // Entrenar
-          entrenarLMS(&perceptron, &modelo_sistema);
+          //entrenarLMS(&perceptron, &modelo_sistema);
+          if (xSemaphoreTake(mtxModelo, portMAX_DELAY) == pdTRUE) {
+            entrenarLMS(&perceptron, &modelo_sistema);
+            xSemaphoreGive(mtxModelo);
+          }
 
           // Guardar metricas
           if (xSemaphoreTake(mtxModelo, portMAX_DELAY) == pdTRUE) {
@@ -164,14 +173,32 @@ void tareaInferencia(void *pvParameters)
   
   for (;;) {
     if (modo_sis == RUN) {
+
       if (xSemaphoreTake(mtxModelo, pdMS_TO_TICKS(10)) == pdTRUE) {
         if (modelo_sistema.entrenado) {
           double x_in[num_entradas_detectadas];
 
           // Construir encabezado para HMI
           snprintf(hmi_pots, sizeof(hmi_pots), "POTS:");
+
+          if (xSemaphoreTake(mtxPots, portMAX_DELAY) == pdTRUE) {
           
-          for (uint8_t j = 0; j < num_entradas_detectadas; j++) {
+              for (uint8_t j = 0; j < num_entradas_detectadas; j++) {
+                  uint8_t val_bin = adc_leerBin_act(j, UMBRAL);
+                  x_in[j] = (double)val_bin;
+
+                  // Concatenar trama
+                  size_t len = strlen(hmi_pots);
+                  if (len < sizeof(hmi_pots) - 1) {
+                    hmi_pots[len] = val_bin ? '1' : '0';
+                    hmi_pots[len + 1] = '\0';
+                  }
+              }
+          
+              xSemaphoreGive(mtxPots);
+          }
+          
+          /*for (uint8_t j = 0; j < num_entradas_detectadas; j++) {
             uint8_t val_bin = adc_leerBin_act(j, UMBRAL);
             x_in[j] = (double)val_bin;
 
@@ -181,7 +208,7 @@ void tareaInferencia(void *pvParameters)
               hmi_pots[len] = val_bin ? '1' : '0';
               hmi_pots[len + 1] = '\0';
              }
-          }
+          }*/
 
           // Inferencia
           uint8_t inf = modelo_inferir(&modelo_sistema, x_in);
@@ -209,22 +236,49 @@ void tareaHMI(void *pvParameters)
   char buffer[64];
 
   for (;;) {
+    if (xSemaphoreTake(mtxPots, portMAX_DELAY) == pdTRUE) {
+      num_entradas_detectadas = adc_detectar_entradas();
+      xSemaphoreGive(mtxPots);
+
+      if (num_entradas_detectadas != last_num_entradas_detectadas){
+        secuencia[0] = '\0';
+        last_num_entradas_detectadas = num_entradas_detectadas;
+        xSemaphoreGive(semEntrenamiento);
+      }
+    }
+    //num_entradas_detectadas = adc_detectar_entradas();
+    /*if (num_entradas_detectadas != last_num_entradas_detectadas){
+      secuencia[0] = '\0';
+      last_num_entradas_detectadas = num_entradas_detectadas;
+      xSemaphoreGive(semEntrenamiento);
+    }*/
+
     if (print_leer_comando(buffer, sizeof(buffer))) {
       // Ver opcion seleccionada
       if (strncmp(buffer, "CMD:AND", 7) == 0) {
         seleccion = AND;
-        secuencia[0] = '\0';
+        //secuencia[0] = '\0';
 
         print_mensaje("[HMI] Configuracion cargada: Funcion AND.");
-        num_entradas_detectadas = adc_detectar_entradas();
+        //num_entradas_detectadas = adc_detectar_entradas();
+        if (xSemaphoreTake(mtxPots, portMAX_DELAY) == pdTRUE) {
+            num_entradas_detectadas = adc_detectar_entradas();
+            xSemaphoreGive(mtxPots);
+        }
+        //last_num_entradas_detectadas = num_entradas_detectadas;
       }
 
       else if (strncmp(buffer, "CMD:OR", 6) == 0) {
         seleccion = OR;
-        secuencia[0] = '\0';
+        //secuencia[0] = '\0';
 
         print_mensaje("[HMI] Configuracion cargada: Funcion OR.");
-        num_entradas_detectadas = adc_detectar_entradas();
+        //num_entradas_detectadas = adc_detectar_entradas();
+        if (xSemaphoreTake(mtxPots, portMAX_DELAY) == pdTRUE) {
+            num_entradas_detectadas = adc_detectar_entradas();
+            xSemaphoreGive(mtxPots);
+        }
+        //last_num_entradas_detectadas = num_entradas_detectadas;
       }
 
       else if (strncmp(buffer, "CMD:OTRO:", 9) == 0) {
@@ -233,7 +287,12 @@ void tareaHMI(void *pvParameters)
         secuencia[sizeof(secuencia) - 1] = '\0'; // al final de la secuencia poner '\0'
 
         print_mensaje("[HMI] Configuracion cargada: Funcion personalizada.");
-        num_entradas_detectadas = adc_detectar_entradas();
+        //num_entradas_detectadas = adc_detectar_entradas();
+        if (xSemaphoreTake(mtxPots, portMAX_DELAY) == pdTRUE) {
+            num_entradas_detectadas = adc_detectar_entradas();
+            xSemaphoreGive(mtxPots);
+        }
+        //last_num_entradas_detectadas = num_entradas_detectadas;
       }
 
       if (modo_sis == RUN) {
