@@ -125,6 +125,9 @@ void tareaEntrenamiento(void *pvParameters)
       if (modo_sis == RUN) {
         print_mensaje("[ML] Iniciando memoria dinamica y entrenamiento.");
 
+        // Verificar cuantas entradas hay si es que cambio
+        num_entradas_detectadas = adc_detectar_entradas();
+
         // Memoria dinamica
         if (perceptron_init(&perceptron, num_entradas_detectadas)) {
           generar_patrones(&perceptron);
