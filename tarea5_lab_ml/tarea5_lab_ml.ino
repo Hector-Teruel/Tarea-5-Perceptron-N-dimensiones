@@ -125,8 +125,12 @@ void tareaEntrenamiento(void *pvParameters)
       if (modo_sis == RUN) {
         print_mensaje("[ML] Iniciando memoria dinamica y entrenamiento.");
 
-        // Verificar cuantas entradas hay si es que cambio
-        num_entradas_detectadas = adc_detectar_entradas();
+        // Proteger el refresco del BSP y del modelo si cambio N entradas
+        if (xSemaphoreTake(mtxModelo, portMAX_DELAY) == pdTRUE) {
+          num_entradas_detectadas = adc_detectar_entradas();
+          modelo_init(&modelo_sistema, num_entradas_detectadas);
+          xSemaphoreGive(mtxModelo);
+        }
 
         // Memoria dinamica
         if (perceptron_init(&perceptron, num_entradas_detectadas)) {
@@ -175,6 +179,7 @@ void tareaInferencia(void *pvParameters)
           snprintf(hmi_pots, sizeof(hmi_pots), "POTS:");
           
           for (uint8_t j = 0; j < num_entradas_detectadas; j++) {
+
             uint8_t val_bin = adc_leerBin_act(j, UMBRAL);
             x_in[j] = (double)val_bin;
 
@@ -183,7 +188,7 @@ void tareaInferencia(void *pvParameters)
             if (len < sizeof(hmi_pots) - 1) {
               hmi_pots[len] = val_bin ? '1' : '0';
               hmi_pots[len + 1] = '\0';
-             }
+            }
           }
 
           // Inferencia
