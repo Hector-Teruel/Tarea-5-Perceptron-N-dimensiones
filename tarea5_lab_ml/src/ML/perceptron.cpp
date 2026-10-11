@@ -42,6 +42,11 @@ bool modelo_init(modelo_t *m, uint8_t entradas)
 {
   if (m == NULL || entradas < 2 || entradas > MAX_ENTRADAS) return false;
 
+  if (m->w != NULL) {
+    free(m->w);
+    m->w = NULL;
+  }
+  
   m->entradas = entradas;
 
   m->w = (double *)calloc((size_t)m->entradas, sizeof(double));
@@ -111,6 +116,13 @@ void cargar_salidas(perceptron_t *p, op_salida_e opcion, const char *secuencia)
         p->d_bin[i] = (secuencia[i] == '1') ? 1 : 0;
       }
     }
+
+    else {
+      // Si la secuencia no coincide se ponen ceros
+      for (uint8_t i = 0; i < p->patrones; i++) {
+        p->d_bin[i] = 0;
+      }
+    }
   }
 
   // Salida binaria a continua
@@ -170,8 +182,8 @@ void entrenarLMS(perceptron_t *p, modelo_t *m)
   double *grad_w = (double *)calloc((size_t)p->entradas, sizeof(double));
 
   if (mejor_w == NULL || grad_w == NULL) {
-    free(mejor_w);
-    free(grad_w);
+    if (mejor_w != NULL) free(mejor_w);
+    if (grad_w != NULL) free(grad_w);
     return;
   }
 
@@ -251,7 +263,7 @@ void entrenarLMS(perceptron_t *p, modelo_t *m)
       epocas_actuales = epoc + 1;
 
       // Verificar divergencia
-      if (mse_actual != mse_actual || mse_actual > 1e100) {
+      if (isnan(mse_actual) || mse_actual > 1e100) {
         divergio_actual = true;
         break;
       }

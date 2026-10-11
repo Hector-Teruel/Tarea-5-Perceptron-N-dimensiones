@@ -46,7 +46,7 @@ uint8_t adc_detectar_entradas()
 
     uint16_t prom = (uint16_t)(suma / 10);
 
-    if (prom > 1100) {
+    if (prom >= 1000) {
       temp[n_entradas_act] = LISTA_POTS[i];
       n_entradas_act++;
     }
@@ -60,7 +60,6 @@ uint8_t adc_detectar_entradas()
   
   pots_act = (pots_e *)malloc((size_t)n_entradas_act * sizeof(pots_e));
   if (pots_act == NULL) {
-    free(pots_act);
     n_entradas_act = 0;
     return 0;
   }
@@ -68,6 +67,8 @@ uint8_t adc_detectar_entradas()
   for (uint8_t i = 0; i < n_entradas_act; i++) {
     pots_act[i] = temp[i];
   }
+
+  return n_entradas_act;
 }
 
 uint8_t adc_leerBin_act(uint8_t ind, uint16_t umbral)

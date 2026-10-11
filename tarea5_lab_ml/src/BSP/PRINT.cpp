@@ -56,4 +56,6 @@ bool print_leer_comando(char *buffer, size_t max_len)
 
     return false;
   }
+
+  return false;
 }
