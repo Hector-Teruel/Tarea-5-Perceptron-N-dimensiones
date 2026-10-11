@@ -9,7 +9,7 @@ typedef struct{
 class bsp_board_pots {
   private: 
     bsp_pots_config bsp_setup;
-    int bsp_ON_pots;
+    //int bsp_ON_pots;
 
   public:
     bsp_board_pots(Gpio_array pines, int threshold){
@@ -33,13 +33,13 @@ class bsp_board_pots {
         }
 
       }
-      bsp_ON_pots = hard_binary_readings.size();
+      //bsp_ON_pots = hard_binary_readings.size();
       return hard_binary_readings;
     }
 
-    int get_pots_ON() {
+    /*int get_pots_ON() {
       return bsp_ON_pots;
-    }
+    }*/
 };
 
 Gpio_array bsp_gpio_pots = {34, 35, 32, 33, 39};
@@ -53,7 +53,8 @@ void setup() {
 
 void loop() {
   Readings_array readings = bsp_pots.bsp_read_pots();
-  int pots_funcionando = bsp_pots.get_pots_ON();
+  //int pots_funcionando = bsp_pots.get_pots_ON();
+  int pots_funcionando = readings.size();
 
   Serial.println(pots_funcionando);
 
