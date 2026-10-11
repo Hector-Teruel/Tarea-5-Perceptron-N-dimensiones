@@ -18,7 +18,7 @@
 #include <stdlib.h>
 
 #define BOTON 26
-#define UMBRAL 2048
+#define UMBRAL 1548 //2048
 
 // =================================================================
 //                  DEFINICION DE ENUMERACIONES
@@ -120,9 +120,15 @@ void print_init(uint32_t baudrate);
 
 /**
  * @brief Envia una cadena de texto a la HMI
- * @param msj Mensaje a transmitir
+ * @param msj Mensaje a transmitir con salto al final 
  */
 void print_mensaje(const char *msj);
+
+/**
+ * @brief Envia una cadena de texto a la HMI
+ * @param msj Mensaje a transmitir sin salto al final 
+ */
+void print_mensaje_sinln(const char *msj);
 
 /**
  * @brief Envia un numero entero a la HMI

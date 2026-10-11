@@ -18,6 +18,13 @@ void print_mensaje(const char *msj)
   Serial.println(msj);
 }
 
+void print_mensaje_sinln(const char *msj)
+{
+  if (msj == NULL) return;
+
+  Serial.print(msj);
+}
+
 void print_entero(int val)
 {
   Serial.println(val);
